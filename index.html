@@ -42,17 +42,16 @@
       <div class="slides">
         <section>
           <h1>Consuming APIs With Go</h1>
-          <h3>(like a noob)</h3>
           <p>
             <a href="http://tracehelms.com">http://tracehelms.com</a> / Twitter: @tracehelms
           </p>
         </section>
 
-        <section>
+        <section data-background="http://i.imgur.com/9pSx73A.jpg">
           <h2>Who am I?</h2>
           <p>I'm a Ruby dev from Florida. Moved here a year ago with my dog Baron.</p>
           <p>Pretty new to Golang.</p>
-          <p>Baron photo here</p>
+          <!-- <img src="http://i.imgur.com/9pSx73A.jpg"/> -->
         </section>
 
         <section data-background="http://i.imgur.com/EPpH3SK.gif"><!-- chompy.gif -->
@@ -135,10 +134,15 @@ func main() {
   results := yelp.New().Search(query, *location)
   ...
 }</code></pre>
+          <p>Note: "os" package won't work with "flag" package</p>
         </section>
 
         <section>
           <h2>HTTP Client</h2>
+          <ul>
+            <li>Client holds our HTTP client (for making requests, required by "oauth" package) and our credentials</li>
+            <li>We can also call the Search method on our client.</li>
+          </ul>
           <pre><code>package yelp
 
 type Client struct {
@@ -162,24 +166,26 @@ func New() *Client {
 
         <section>
           <h2>Authentication</h2>
+          <p>File: keys.json</p>
+          <p>Keep this out of version control!</p>
+          <pre><code>{
+  "ConsumerKey": "nacho_key",
+  "ConsumerSecret": "nacho_secret",
+  "AccessToken": "nacho_token",
+  "AccessTokenSecret": "nacho_token_secret"
+}</code></pre>
+          <p>Convert it to a struct like so</p>
           <pre><code>type Credentials struct {
   ConsumerKey       string
   ConsumerSecret    string
   AccessToken       string
   AccessTokenSecret string
 }</code></pre>
-          <p>File: keys.json</p>
-          <p>Keep this out of version control!</p>
-          <pre><code>{
-  "ConsumerKey": "",
-  "ConsumerSecret": "",
-  "AccessToken": "",
-  "AccessTokenSecret": ""
-}</code></pre>
         </section>
 
         <section>
           <h2>HTTP Client (revisited)</h2>
+          <p>Remember the New() method? Now we have credentials!</p>
           <pre><code>func New() *Client {
   data, err := ioutil.ReadFile("keys.json")
   if err != nil {
@@ -203,6 +209,10 @@ func New() *Client {
 
         <section>
           <h2>Searching</h2>
+          <ul>
+            <li>Method on the Client struct</li>
+            <li>Usage: client.Search("bacon", "80304")</li>
+          </ul>
           <pre><code>func (client *Client) Search(query string, location string)
   SearchResult {
 
@@ -216,21 +226,23 @@ func New() *Client {
 
   ...
 }</code></pre>
+          <p>MakeRequest() ....what does that do?</p>
         </section>
 
         <section>
           <h2>Making Request</h2>
+          <ul>
+            <li>Remember: client contains an HTTP client for making requests and our API credentials</li>
+            <li>We set credentials (and our HTTP client) on oauth object</li>
+          </ul>
           <pre><code>func MakeRequest(client *Client, params map[string]string)
   *http.Response {
 
   c := oauth.NewCustomHttpClientConsumer(
     client.Options.ConsumerKey,
     client.Options.ConsumerSecret,
-    oauth.ServiceProvider{
-      RequestTokenUrl:   "",
-      AuthorizeTokenUrl: "",
-      AccessTokenUrl:    "",
-    },
+    oauth.ServiceProvider{RequestTokenUrl: "",
+      AuthorizeTokenUrl: "", AccessTokenUrl: "", },
     client.Client,
   )
 
@@ -238,8 +250,13 @@ func New() *Client {
     client.Options.AccessToken,
     client.Options.AccessTokenSecret,
     make(map[string]string),
-  }
+  }</code></pre>
+        </section>
 
+        <section>
+          <h2>Making Request (cont.)</h2>
+          <p>With our credentials set, no we can call the Get() method</p>
+          <pre><code>  ...
   resp, err := c.Get(url, params, token)
   if err != nil {
     panic(err)
@@ -254,6 +271,46 @@ func New() *Client {
 
         <section>
           <h2>Parsing Response</h2>
+          <p>Remember our friend the Search() method?</p>
+          <pre><code>func (client *Client) Search(query string, location string)
+  SearchResult {
+
+  params := ...
+  resp := MakeRequest(client, params)
+
+  defer resp.Body.Close()
+
+  var r SearchResult
+  err := json.NewDecoder(resp.Body).Decode(&r)
+  if err != nil {
+    panic(err)
+  }
+}
+</code></pre>
+          <p>Note: SearchResult</p>
+        </section>
+
+        <section>
+          <h2>Parsing Response (cont.)</h2>
+          <p>Example JSON Response</p>
+          <pre><code>{
+  "businesses": [
+    {
+      "name": "Big Kahuna Burger",
+      "rating": "5",
+      "url": "http://bigkahuna.com",
+      "location": {
+        "display_address": ["123 Pearl St.", "Boulder CO", "80304"]
+      }
+    },
+    more businesses...
+  ]
+}
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Parsing Response (cont.)</h2>
           <pre><code>import (
   "encoding/json"
 )
@@ -270,64 +327,74 @@ type Business struct {
 type Location struct {
   Address []string `json:"display_address"`
 }</code></pre>
+          <p>Note: nested structs</p>
+        </section>
+
+        <section data-background="http://i.imgur.com/sEwoXfb.gif"> <!-- virtual-taco.gif -->
+          <h2>We finally have results!</h2>
         </section>
 
         <section>
-          <h2>Parsing Response (cont.)</h2>
-          <pre><code>resp := MakeRequest(client, params)
+          <h2>Random Restaurant</h2>
+          <pre><code>func main() {
+  location := flag.String("location", "80304",
+    "the location you want to search in")
+  flag.Parse()
+  query := flag.Args()[0]
 
-defer resp.Body.Close()
+  results := yelp.New().Search(query, *location)
+  count := len(results.Businesses)
+  if count <= 0 {
+    fmt.Println("No results were found!")
+    return
+  }
+  r := rand.New(rand.NewSource(time.Now().UnixNano()))
+  randNumber := r.Intn(count)
 
-var r SearchResult
-err := json.NewDecoder(resp.Body).Decode(&r)
-if err != nil {
-  panic(err)
-}
-</code></pre>
+  printResult(results.Businesses[randNumber])
+}</code></pre>
+          <p><code>results</code> is a slice of Businesses, let's pick one!</p>
         </section>
 
         <section>
-          <h2>Searching (revisited)</h2>
-          <pre><code>func (client *Client) Search(query string, location string)
-  SearchResult {
+          <h2>Show the User</h2>
+          <pre><code>func printResult(business yelp.Business) {
+  fmt.Println("Time for grub! Your destination:")
+  fmt.Println("Name:     ", business.Name)
+  fmt.Println("Rating:   ", business.Rating)
+  fmt.Println("Location: ", business.Location.Address)
+  fmt.Println("URL:      ", business.Url)
+}</code></pre>
+        </section>
 
-  params := map[string]string{
-    "term":     query,
-    "location": location,
-    "limit":    "20",
-  }
-
-  resp := MakeRequest(client, params)
-
-  defer resp.Body.Close()
-
-  var r SearchResult
-  err := json.NewDecoder(resp.Body).Decode(&r)
-  if err != nil {
-    panic(err)
-  }
-
-  return r
-}
-</code></pre>
+        <section>
+          <h2>Reminder: This is what you sat here for</h2>
+          <pre><code class="nohighlight">~/ $ golunch -location=80304 mexican
+Time for grub! Your destination:
+Name:      Pica's Taqueria
+Rating:    3.5
+Location:  [5360 Arapahoe Ave Ste F Boulder, CO 80303]
+URL:       http://www.yelp.com/biz/picas-taqueria-boulder</code></pre>
         </section>
 
         <section data-background="http://i.imgur.com/ExLlZ0n.gif"> <!-- taco.gif -->
         </section>
 
         <section>
-          <h2>Random Restaurant</h2>
-        </section>
-
-
-        <section>
           <h2>Sources</h2>
+          <ul>
+            <li><a href="https://github.com/JustinBeckwith/go-yelp" target="_blank">https://github.com/JustinBeckwith/go-yelp</a></li>
+            <li><a href="https://gobyexample.com" target="_blank">https://gobyexample.com</a></li>
+            <li><a href="https://github.com/hakimel/reveal.js" target="_blank">https://github.com/hakimel/reveal.js</a></li>
+          </ul>
         </section>
 
         <section>
           <h2>Thanks!</h2>
-          <h3>Github: <a href="http://github.com/tracehelms/golunch">http://github.com/tracehelms/golunch</a></h3>
-          <h3>Slides: <a href="http://tracehelms.com/talks/consuming_apis_with_go">http://tracehelms.com/talks/consuming_apis_with_go</a></h3>
+          <h3>GitHub</h3>
+          <p><a href="http://github.com/tracehelms/golunch" target="_blank">http://github.com/tracehelms/golunch</a></p>
+          <h3>Slides</h3>
+          <p><a href="http://tracehelms.com/talk_consuming_apis_with_go" target="_blank">http://tracehelms.com/talk_consuming_apis_with_go</a></p>
         </section>
 
       </div>
