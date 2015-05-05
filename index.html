@@ -47,27 +47,14 @@
           </p>
         </section>
 
-        <section data-background="http://i.imgur.com/9pSx73A.jpg">
+        <section>
           <h2>Who am I?</h2>
           <p>I'm a Ruby dev from Florida.</p>
           <p>Moved here a year ago with my dog Baron.</p>
           <p>Pretty new to Golang.</p>
         </section>
 
-        <section>
-          <h2>I'm Sorry...</h2>
-          <p class="fragment">This talk is pretty technical.</p>
-          <p class="fragment">I'll try to explain as best I can.</p>
-          <p class="fragment">Try to hang in there.</p>
-          <p class="fragment">No need to absorb all the code now, you can view it later.</p>
-          <p class="fragment">I have lots of GIFs and pictures for comedic relief.</p>
-        </section>
-
-        <section data-background="http://i.imgur.com/zqU8jZX.jpg"><!-- its-a-trap.gif -->
-        </section>
-
-        <section>
-          <h2>I told you I had comedic relief</h2>
+        <section data-background="http://i.imgur.com/9pSx73A.jpg">
         </section>
 
         <section>
@@ -131,12 +118,11 @@ URL:       http://www.yelp.com/biz/picas-taqueria-boulder
         <section>
           <h2>Program Flow</h2>
           <ol>
-            <li>Parse user input, i.e. "-location=80304 mexican"</li>
-            <li class="fragment">Make HTTP GET request (credentials are passed in Authentication header)</li>
-            <li class="fragment">Get back JSON response</li>
-            <li class="fragment">Parse it into something we can work with in Go</li>
-            <li class="fragment">Pick a random restaurant</li>
-            <li class="fragment">Show it to the user</li>
+            <em><strong><li>*** Parse user input, i.e. "-location=80304 mexican"</li></strong></em>
+            <li>Set up necessary authentication stuff</li>
+            <li>Make HTTP GET request (credentials are passed in Authentication header)</li>
+            <li>Parse JSON response into something we can work with in Go</li>
+            <li>Pick a random restaurant and show it to the user</li>
           </ol>
         </section>
 
@@ -162,6 +148,17 @@ func main() {
         </section>
 
         <section>
+          <h2>Program Flow</h2>
+          <ol>
+            <li>Parse user input, i.e. "-location=80304 mexican"</li>
+            <strong><em><li>*** Set up necessary authentication stuff</li></strong></em>
+            <li>Make HTTP GET request (credentials are passed in Authentication header)</li>
+            <li>Parse JSON response into something we can work with in Go</li>
+            <li>Pick a random restaurant and show it to the user</li>
+          </ol>
+        </section>
+
+        <section>
           <h2>HTTP Client</h2>
           <ul>
             <li>Client holds our HTTP client (for making requests, required by "oauth" package) and our credentials</li>
@@ -183,9 +180,6 @@ func New() *Client {
 }
 # Usage:
 # client := yelp.New()</code></pre>
-        </section>
-
-        <section data-background="http://i.imgur.com/2xfoPH0.gif"> <!-- wut.gif -->
         </section>
 
         <section>
@@ -213,7 +207,7 @@ func New() *Client {
           <pre><code>func New() *Client {
   data, err := ioutil.ReadFile("yelp_keys.json")
   if err != nil {
-    panic(err) // I'm sorrrrry! (Ruby dev)
+    panic(err)
   }
   var creds Credentials
   err = json.Unmarshal(data, &creds)
@@ -228,7 +222,18 @@ func New() *Client {
 }</code></pre>
         </section>
 
-        <section data-background="http://i.imgur.com/NiReFOu.gif"> <!-- send-help.gif -->
+        <section data-background="http://i.imgur.com/2xfoPH0.gif"> <!-- wut.gif -->
+        </section>
+
+        <section>
+          <h2>Program Flow</h2>
+          <ol>
+            <li>Parse user input, i.e. "-location=80304 mexican"</li>
+            <li>Set up necessary authentication stuff</li>
+            <strong><em><li>*** Make HTTP GET request (credentials are passed in Authentication header)</li></strong></em>
+            <li>Parse JSON response into something we can work with in Go</li>
+            <li>Pick a random restaurant and show it to the user</li>
+          </ol>
         </section>
 
         <section>
@@ -294,6 +299,17 @@ func New() *Client {
         </section>
 
         <section>
+          <h2>Program Flow</h2>
+          <ol>
+            <li>Parse user input, i.e. "-location=80304 mexican"</li>
+            <li>Set up necessary authentication stuff</li>
+            <li>Make HTTP GET request (credentials are passed in Authentication header)</li>
+            <strong><em><li>*** Parse JSON response into something we can work with in Go</li></strong></em>
+            <li>Pick a random restaurant and show it to the user</li>
+          </ol>
+        </section>
+
+        <section>
           <h2>Parsing Response</h2>
           <p>Remember our friend the Search() method?</p>
           <pre><code>func (client *Client) Search(query string, location string)
@@ -355,8 +371,23 @@ type Location struct {
           <p>Note: nested structs</p>
         </section>
 
-        <section data-background="http://i.imgur.com/sEwoXfb.gif"> <!-- virtual-taco.gif -->
+        <section>
           <h2>We finally have results!</h2>
+          <p>We can eat soon!</p>
+        </section>
+
+        <section data-background="http://i.imgur.com/sEwoXfb.gif"> <!-- virtual-taco.gif -->
+        </section>
+
+        <section>
+          <h2>Program Flow</h2>
+          <ol>
+            <li>Parse user input, i.e. "-location=80304 mexican"</li>
+            <li>Set up necessary authentication stuff</li>
+            <li>Make HTTP GET request (credentials are passed in Authentication header)</li>
+            <li>Parse JSON response into something we can work with in Go</li>
+            <strong><em><li>*** Pick a random restaurant and show it to the user</li></strong></em>
+          </ol>
         </section>
 
         <section>
@@ -402,6 +433,21 @@ Location:  [5360 Arapahoe Ave Ste F Boulder, CO 80303]
 URL:       http://www.yelp.com/biz/picas-taqueria-boulder</code></pre>
         </section>
 
+        <section>
+          <h2>Recap</h2>
+          <ol>
+            <li>Parse user input, i.e. "-location=80304 mexican"</li>
+            <li>Set up necessary authentication stuff</li>
+            <li>Make HTTP GET request (credentials are passed in Authentication header)</li>
+            <li>Parse JSON response into something we can work with in Go</li>
+            <li>Pick a random restaurant and show it to the user</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Now We Can Eat</h2>
+        </section>
+
         <section data-background="http://i.imgur.com/ExLlZ0n.gif"> <!-- taco.gif -->
         </section>
 
@@ -410,7 +456,7 @@ URL:       http://www.yelp.com/biz/picas-taqueria-boulder</code></pre>
           <ul>
             <li>No tests (shame-face)</li>
             <li>Bad error handling</li>
-            <li>Must have `yelp_keys.json` in whatever folder you run `golunch` from</li>
+            <li>Must have <code>yelp_keys.json</code> in whatever folder you run <code>golunch</code> from...looking to fix this</li>
           </ul>
         </section>
 
