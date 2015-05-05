@@ -190,7 +190,7 @@ func New() *Client {
 
         <section>
           <h2>Authentication</h2>
-          <p>File: keys.json</p>
+          <p>File: yelp_keys.json</p>
           <p>Keep this out of version control!</p>
           <pre><code>{
   "ConsumerKey": "nacho_key",
@@ -211,7 +211,7 @@ func New() *Client {
           <h2>HTTP Client (revisited)</h2>
           <p>Remember the New() method? Now we have credentials!</p>
           <pre><code>func New() *Client {
-  data, err := ioutil.ReadFile("keys.json")
+  data, err := ioutil.ReadFile("yelp_keys.json")
   if err != nil {
     panic(err) // I'm sorrrrry! (Ruby dev)
   }
@@ -403,6 +403,15 @@ URL:       http://www.yelp.com/biz/picas-taqueria-boulder</code></pre>
         </section>
 
         <section data-background="http://i.imgur.com/ExLlZ0n.gif"> <!-- taco.gif -->
+        </section>
+
+        <section>
+          <h2>Gotchas</h2>
+          <ul>
+            <li>No tests (shame-face)</li>
+            <li>Bad error handling</li>
+            <li>Must have `yelp_keys.json` in whatever folder you run `golunch` from</li>
+          </ul>
         </section>
 
         <section>
